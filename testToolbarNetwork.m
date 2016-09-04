@@ -1,2 +1,5 @@
 fileName = 'breastCancerFullDataSet.xlsx';
-xlsread(fileName);
+[numeric,text,excel] = xlsread(fileName);
+targetVector = numeric(:,1);
+inputMatrix = numeric(:,2:10);
+net = feedforwardnet;

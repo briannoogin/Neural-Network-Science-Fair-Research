@@ -1,0 +1,18 @@
+fileName = 'breastCancerFullDataSet.xlsx';
+[numeric,text,excel] = xlsread(fileName);
+targetVector = numeric(:,1);
+inputMatrix = numeric(:,2:10);
+%auto = trainAutoencoder(numeric);
+%dataReconstructed = predict(auto,numeric);
+%net = configure(net,inputMatrix,targetVector);
+inputConnect = zeros(1,681);
+%net = network(1,2,zeros(2,1),zeros(2,1),zeros(2,2),zeros(1,2));
+%net.layers{1}.transferFcn = 'tansig';
+%net.layers{2}.transferFcn = 'logsig';
+net = feedforwardnet(20);
+targetVector = targetVector.';
+inputMatrix = inputMatrix.';
+net = configure(net,inputMatrix,targetVector);
+net.layers{2}.transferFcn = 'logsig';
+%net = train(net,inputMatrix,targetVector,);
+%view(net);
