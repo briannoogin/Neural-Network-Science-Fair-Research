@@ -15,4 +15,4 @@ inputMatrix = inputMatrix.';
 net = configure(net,inputMatrix,targetVector);
 net.layers{2}.transferFcn = 'logsig';
 %net = train(net,inputMatrix,targetVector,);
-%view(net);
+view(net);
