@@ -1,5 +1,5 @@
 % Reads Excel File
-trainingfileName = 'breastTrainData.xlsx';
+trainingfileName = 'scienceFairBreastCancerData.xls';
 [trainNumeric,text,excel] = xlsread(trainingfileName);
 testfileName = 'breastTestData.xlsx';
 [testNumeric,testText,testExcel] = xlsread(testfileName);
@@ -36,10 +36,14 @@ net.biasConnect = [1;1;1;1];
 net.outputConnect = [0 0 0 1];
 % Shape the network to the data
 net = configure(net,trainingInputMatrix,trainTargetVector);
-net.performParam.regularization = .75;
+net.performParam.regularization = .9;
 net.trainFcn = 'trainscg';
 % Change train settings and train network 
-net.trainParam.mu_max = 1.0000e+100;
+net.trainParam.showWindow = 0;
+trialPercentPerformance = zeros(10,1);
+trialTrainPerformance = zeros(10,1);
+% Do multiple trials for percent correct
+for trial = 1 : 10
 [net,record] = train(net,trainingInputMatrix,trainTargetVector,'useGPU','yes');
 trainPerformance = perform(net,trainingInputMatrix,trainTargetVector);
 %net = adapt(net,trainingInputMatrix,trainTargetVector);
@@ -47,9 +51,24 @@ trainPerformance = perform(net,trainingInputMatrix,trainTargetVector);
 y = net(trainingInputMatrix);
 y = y > .50;
 percentCorrect = find(y == trainTargetVector);
-percentCorrect = size(percentCorrect,2) / size(trainTargetVector,2);  
+percentCorrect = size(percentCorrect,2) / size(trainTargetVector,2); 
+trialPercentPerformance(trial) = percentCorrect;
+trialTrainPerformance(trial) = trainPerformance;
+end
+% Calculate the average performance
+percentCorrect = sum(trialPercentPerformance,1) / size(trialPercentPerformance,1);
+trainPerformance = sum(trialPercentPerformance,1) / size(trialPercentPerformance,1);
 % Test Performance
 testPerformance = perform(net,testInputMatrix,testTargetVector);
-view(net);
-net
+[tpr,fpr,thresholds] = roc(trainTargetVector,y);
+plotroc(trainTargetVector,y);
+% Test linear performance
+linearY = linearNetwork;
+%plotroc(trainTargetVector,linearY);
+%%%% Outlier System Idea
+%{
+I should look at the data and see what examples were wrong the most often.
+Hopefully, the problem is that one feature is a problem so I can easily put
+the outliers in an outlier dataset.
+%}
 
