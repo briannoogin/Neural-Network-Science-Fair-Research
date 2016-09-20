@@ -1,20 +1,24 @@
 % Reads Excel File
-trainingfileName = 'scienceFairBreastCancerData.xls';
+trainingfileName = 'breastCancerFullDataSet';
 [trainNumeric,text,excel] = xlsread(trainingfileName);
-testfileName = 'breastTestData.xlsx';
+testfileName = 'breastCancerFullDataSet';
 [testNumeric,testText,testExcel] = xlsread(testfileName);
+% Autoencode the data
+encodeData = trainNumeric(:,2:size(trainNumeric,2));
+encodeData = encodeData.';
+autoenc = trainAutoencoder(encodeData,5);
+features = encode(autoenc,encodeData);
 % Gets the data targets
 trainTargetVector = trainNumeric(:,1);
 testTargetVector = testNumeric(:,1);
 % Gets the data
-trainingInputMatrix = trainNumeric(:,2:size(excel,2));
-testInputMatrix = testNumeric(:,2:size(excel,2));
+trainingInputMatrix = features;
+testInputMatrix = testNumeric(:,2:size(testNumeric,2));
 % Creates network with three layers
 net = feedforwardnet(10);
 net.numlayers = 4;
 % Tranpose data so it works with the toolbox
 trainTargetVector = trainTargetVector.';
-trainingInputMatrix = trainingInputMatrix.';
 testTargetVector = testTargetVector.';
 testInputMatrix = testInputMatrix.';
 % Name the layers
@@ -36,30 +40,31 @@ net.biasConnect = [1;1;1;1];
 net.outputConnect = [0 0 0 1];
 % Shape the network to the data
 %net = configure(net,trainingInputMatrix,trainTargetVector);
-net.performParam.regularization = 0;
+net.performParam.regularization = .9;
 net.trainFcn = 'trainscg';
 net.initFcn = 'initlay';
 net.layers{1}.netInputFcn = 'netsum';
 net.layers{2}.netInputFcn = 'netsum';
 net.layers{3}.netInputFcn = 'netsum';
 % Change train settings and train network 
-net.trainParam.showWindow = 0;
+net.trainParam.showWindow = 1;
 trialPercentPerformance = zeros(10,1);
 trialTrainPerformance = zeros(10,1);
 % Do multiple trials for percent correct
 performanceStruct = struct('Net',0);
-for trial = 1 : 10
+for networkCount = 1 : 10
 net = init(net);
 [net1,record] = train(net,trainingInputMatrix,trainTargetVector,'useGPU','yes');
-trainPerformance = perform(net,trainingInputMatrix,trainTargetVector);
+trainPerformance = perform(net, trainingInputMatrix,trainTargetVector);
 % Calculating percent correct
 y = net1(trainingInputMatrix);
-y = y > .50;
+% Changes the probability boundary
+y = y > .5;
 findCorrect = find(y == trainTargetVector);
 percentCorrect = size(findCorrect,2) / size(trainTargetVector,2); 
-trialPercentPerformance(trial) = percentCorrect;
-trialTrainPerformance(trial) = trainPerformance;
-performanceStruct(trial).Net = net1;
+trialPercentPerformance(networkCount) = percentCorrect;
+trialTrainPerformance(networkCount) = trainPerformance;
+performanceStruct(networkCount).Net = net1;
 end
 [~,bestPerformanceIndex] = max(trialPercentPerformance);
 net = performanceStruct(bestPerformanceIndex).Net;

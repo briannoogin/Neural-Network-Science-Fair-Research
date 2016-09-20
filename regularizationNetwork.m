@@ -1,5 +1,5 @@
 % Reads Excel File
-trainingfileName = 'scienceFairBreastCancerData.xls';
+trainingfileName = 'breastCancerFullDataSet.xlsx';
 [trainNumeric,text,excel] = xlsread(trainingfileName);
 testfileName = 'breastTestData.xlsx';
 [testNumeric,testText,testExcel] = xlsread(testfileName);
@@ -7,8 +7,8 @@ testfileName = 'breastTestData.xlsx';
 trainTargetVector = trainNumeric(:,1);
 testTargetVector = testNumeric(:,1);
 % Gets the data
-trainingInputMatrix = trainNumeric(:,2:size(excel,2));
-testInputMatrix = testNumeric(:,2:size(excel,2));
+trainingInputMatrix = trainNumeric(:,2:size(trainNumeric,2));
+testInputMatrix = testNumeric(:,2:size(testNumeric,2));
 % Creates network with three layers
 net = feedforwardnet(10);
 net.numlayers = 4;
@@ -69,21 +69,6 @@ net.performParam.regularization = net.performParam.regularization + .1;
 end
 [~,bestPerformanceIndex] = max(trialPercentPerformance);
 net = performanceStruct(bestPerformanceIndex).Net;
-% Calculate the average performance
-percentCorrect = sum(trialPercentPerformance,1) / size(trialPercentPerformance,1);
-trainPerformance = sum(trialPercentPerformance,1) / size(trialPercentPerformance,1);
-% Test Performance
-testPerformance = perform(net,testInputMatrix,testTargetVector);
-
-% Finds where the network has failed
-error = find(~y == trainTargetVector);
-% Finds all the errors and collects them in a matrix
-errorMatrix = cell(size(error,2) + 1,size(excel,2));
-errorMatrix(1,:) = excel(1,:);
-trainNumeric = num2cell(trainNumeric);
-for errorIndex = 1 : size(error,2)
-    errorMatrix(errorIndex + 1,:) = trainNumeric(error(1,errorIndex),:);
-end
 % ROC Curve
 numberOfTruePositives = size(find(y == trainTargetVector & trainTargetVector == 1),2);
 numberOfTrueNegatives = size(find(y == trainTargetVector & trainTargetVector == 0),2);
