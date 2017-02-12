@@ -4,6 +4,7 @@ trainingfileName = excelName;
 [trainNumeric,text,excel] = xlsread(trainingfileName);
 folds = foldNumber;
 error = zeros(folds,1);
+correct = zeros(folds,1);
 %% Randomly Sort Data
 % Generate random numbers from 1 to number of training examples
 randomPerms = randperm(size(trainNumeric,1)).';
@@ -41,6 +42,12 @@ for numberOfFoldsRan = 1:folds
     testFoldData = testFold(2:size(testFold,1),:);
     % Train Network
     [net,record] = train(net,trainFoldData,trainFoldTargetVec,'useGPU','yes');
-    error(numberOfFoldsRan) = perform(net,testFoldData,testFoldTargetVec);
+    error(numberOfFoldsRan,1) = perform(net,testFoldData,testFoldTargetVec);
+    % Calculate Percent Correct
+    output = net(testFoldData);
+    binOutput = output > .50;
+    numCorrect = find(binOutput == testFoldTargetVec);
+    percentCorrect = size(numCorrect,2) / size(testFoldTargetVec,2);
+    correct(numberOfFoldsRan,1) = percentCorrect
 end
-percentError = mean(error);
+percentError = mean(correct)
