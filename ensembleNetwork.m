@@ -30,12 +30,13 @@ net.biasConnect = [1;1;1;1];
 net.outputConnect = [0 0 0 1];
 % Shape the network to the data
 %net = configure(net,trainingInputMatrix,trainTargetVector);
-net.performParam.regularization = .9;
+net.performParam.regularization = .8;
 net.trainFcn = 'trainscg';
 net.initFcn = 'initlay';
 net.layers{1}.netInputFcn = 'netsum';
 net.layers{2}.netInputFcn = 'netsum';
 net.layers{3}.netInputFcn = 'netsum';
+net.performFcn = 'mse';
 net.trainParam.max_fail = 2;
 % Change train settings and train network 
 net.trainParam.showWindow = 0;
@@ -44,8 +45,8 @@ trialTrainPerformance = zeros(10,1);
 % Train multiple networks for percent correct
 performanceStruct = struct('Net',0,'Prediction',0,'OverallPrediction',0);
 trials = 10;
-networkSize = 5;
-performanceMatrix = zeros(1,trial);
+networkSize = 15;
+performanceMatrix = zeros(1,trials);
 predictionMatrix = zeros(networkSize,size(trainTargetVector,2));
 % Performs trials to determine the best ensemble performance.
 for trial = 1 : trials
@@ -56,7 +57,7 @@ for trial = 1 : trials
  % Prediction based on trained network
  y = trainedNetwork(trainingInputMatrix);
  % Changes the threshold
- y = y > .5;
+ %y = y > .5;
  performanceStruct(networkCount).Net = trainedNetwork;
  performanceStruct(networkCount).Prediction = y;
  predictionMatrix(networkCount,:) = y;
@@ -79,4 +80,21 @@ end
 [maxPerformance,maxIndex] = max(performanceMatrix);
 y = performanceStruct(maxIndex).OverallPrediction;
 error = find(~y == trainTargetVector);
-plotconfusion(trainTargetVector,y);
+%plotconfusion(trainTargetVector,y,'Ensemble');
+% Confusion Matrix Adjustments
+
+%fontsize
+set(findobj(gca,'type','text'),'fontsize',30)
+%plottools;
+
+
+[xCoordinate,yCoordinate,threshhold,AUC] = perfcurve(trainTargetVector,y,1);
+load coords
+hold on
+title('ROC Performance','FontSize',30);
+xlabel('False Positive Rate','FontSize',30);
+ylabel('True Positive Rate','FontSize',30);
+
+plot(xCoordinate,yCoordinate,coords.x,coords.y);
+
+legend('Ensemble Network', 'Multilayer Network');

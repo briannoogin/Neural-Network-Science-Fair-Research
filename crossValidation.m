@@ -48,6 +48,6 @@ for numberOfFoldsRan = 1:folds
     binOutput = output > .50;
     numCorrect = find(binOutput == testFoldTargetVec);
     percentCorrect = size(numCorrect,2) / size(testFoldTargetVec,2);
-    correct(numberOfFoldsRan,1) = percentCorrect
+    correct(numberOfFoldsRan,1) = percentCorrect;
 end
-percentError = mean(correct)
+percentError = mean(correct);

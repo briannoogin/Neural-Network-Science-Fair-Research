@@ -1,7 +1,7 @@
 % Reads Excel File
-trainingfileName = 'breastCancerFullDataSet.xlsx';
+trainingfileName = 'mammographBreastCancerWithDeletedData.xlsx';
 [trainNumeric,text,excel] = xlsread(trainingfileName);
-testfileName = 'breastTestData.xlsx';
+testfileName = 'mammographBreastCancerWithDeletedData.xlsx';
 [testNumeric,testText,testExcel] = xlsread(testfileName);
 % Gets the data targets
 trainTargetVector = trainNumeric(:,1);
@@ -27,9 +27,9 @@ net.layers{1}.transferFcn = 'tansig';
 net.layers{2}.transferFcn = 'tansig';
 net.layers{3}.transferFcn = 'logsig';
 net.layers{4}.transferFcn = 'softmax';
-net.layers{1,1}.size = 1000;
-net.layers{2,1}.size = 500;
-net.layers{3,1}.size = 250;
+net.layers{1,1}.size = 100;
+net.layers{2,1}.size = 50;
+net.layers{3,1}.size = 25;
 % Connects layers and bias units
 net.layerConnect = [0 0 0 0; 1 0 0 0; 0 1 0 0;0 0 1 0];
 net.biasConnect = [1;1;1;1];
@@ -44,11 +44,14 @@ net.layers{2}.netInputFcn = 'netsum';
 net.layers{3}.netInputFcn = 'netsum';
 % Change train settings and train network 
 net.trainParam.showWindow = 0;
-trialPercentPerformance = zeros(10,1);
-trialTrainPerformance = zeros(10,1);
+trialPercentPerformance = zeros(11,1);
+trialTrainPerformance = zeros(11,1);
 % Do multiple trials for percent correct
 performanceStruct = struct('Net',0,'Output',0,'Xcoord',0,'Ycoord',0,'AUC',0);
-for trial = 1 : 10
+AUCperformance = zeros(11,30);
+for aucTrial = 1: 5    
+    net.performParam.regularization = 0;
+for trial = 1 : 11
 net = init(net);
 [net1,record] = train(net,trainingInputMatrix,trainTargetVector,'useGPU','yes');
 trainPerformance = perform(net,trainingInputMatrix,trainTargetVector);
@@ -65,7 +68,10 @@ performanceStruct(trial).Output = y;
 performanceStruct(trial).Xcoord = xCoordinate;
 performanceStruct(trial).Ycoord = yCoordinate;
 performanceStruct(trial).AUC = AUC;
+AUCperformance(trial,aucTrial) = AUC;
+    if trial ~= 11
 net.performParam.regularization = net.performParam.regularization + .1;
+    end
 end
 [~,bestPerformanceIndex] = max(trialPercentPerformance);
 net = performanceStruct(bestPerformanceIndex).Net;
@@ -76,14 +82,22 @@ numberOfFalseNegatives = size(find(y ~= trainTargetVector & trainTargetVector ==
 numberOfFalsePositives = size(find(y ~= trainTargetVector & trainTargetVector == 0),2);
 sensitivity = numberOfTruePositives / (numberOfTruePositives + numberOfFalseNegatives); 
 specificity = numberOfTrueNegatives / (numberOfTrueNegatives + numberOfFalsePositives); 
-hold on
-title('Regularization ROC Curve');
-xlabel('False Positive Rate');
-ylabel('True Positive Rate');
-legend('0.0 Regularization','0.1 Regularization','0.2 Regularization','0.3 Regularization','0.4 Regularization',...
-    '0.5 Regularization','0.6 Regularization','0.7 Regularization','0.8 Regularization','0.9 Regularization',...
-    '1.0 Regularization')
-
-for plotIndex = 1 : trial
-plot(performanceStruct(plotIndex).Xcoord,performanceStruct(plotIndex).Ycoord);
 end
+averageAUC = mean(AUCperformance,2);
+
+hold on
+title('Regularization ROC Curve','FontSize',24);
+xlabel('False Positive Rate','FontSize',24);
+ylabel('True Positive Rate','FontSize',24);
+
+
+for plotIndex = 1 : 11
+plot(performanceStruct(plotIndex).Xcoord,performanceStruct(plotIndex).Ycoord);
+%plot(performanceStruct(2).Xcoord,performanceStruct(2).Ycoord);
+end
+legend('0.0 Regularization','0.1 Regularization','0.2 Regularization','0.3 Regularization','0.4 Regularization',...
+'0.5 Regularization','0.6 Regularization','0.7 Regularization','0.8 Regularization','0.9 Regularization',...
+'1.0 Regularization');
+hold off
+%}
+%bar(AUCperformance);
