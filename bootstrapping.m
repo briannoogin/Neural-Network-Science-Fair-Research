@@ -45,14 +45,20 @@ trialTrainPerformance = zeros(10,1);
 % Train multiple networks for percent correct
 performanceStruct = struct('Net',0,'Prediction',0,'OverallPrediction',0);
 trials = 10;
-networkSize = 15;
+networkSize = 10000;
 performanceMatrix = zeros(1,trials);
 predictionMatrix = zeros(networkSize,size(trainTargetVector,2));
 % Performs trials to determine the best ensemble performance.
 for trial = 1 : trials
  for networkCount = 1 : networkSize
  net = init(net);
- [trainedNetwork,record] = train(net,trainingInputMatrix,trainTargetVector,'useGPU','yes');
+ bootStrap = zeros(networkSize,size(trainNumeric,2));
+ bootTarget = zeros(networkSize,1);
+ % Picks a random training sample
+ randIndex = randi(size(trainNumeric,1));
+ bootStrap(index,:) = trainNumeric(randIndex,:);
+ bootTarget(index,:) = trainTargetVector(randIndex,1);
+ [trainedNetwork,record] = train(net,bootStrap,bootTarget,'useGPU','yes');
  trainPerformance = perform(net,trainingInputMatrix,trainTargetVector);
  % Prediction based on trained network
  y = trainedNetwork(trainingInputMatrix);
@@ -75,6 +81,7 @@ findCorrect = find(y == trainTargetVector);
 percentCorrect = size(findCorrect,2) / size(trainTargetVector,2);
 performanceStruct(trial).OverallPrediction = y;
 performanceMatrix(trial) = percentCorrect;  
+ end
 end
 % Finds where the network has failed
 [maxPerformance,maxIndex] = max(performanceMatrix);

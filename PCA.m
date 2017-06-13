@@ -1,4 +1,4 @@
-[trainNumeric,text,excel] = xlsread('breastCancerKaggle.xlsx');
+[trainNumeric,text,excel] = xlsread('breastCancerKaggleQuestionMarks');
 data = trainNumeric(:,2:size(trainNumeric,2));
 output = trainNumeric(:,1);
 [coef,score,latent,tsquared,explained,mu] = pca(data,'NumComponents',2);
@@ -9,10 +9,22 @@ totalVariance = explained(1,1);
 for variance = 2:size(explained,1)
     totalVariance(variance) = totalVariance(variance - 1) + explained(variance);
 end
+%% Variance Graph
 plot(totalVariance);
-xlabel('Number of Components');
-ylabel('Variance Accounted (%)');
+xlabel('Number of Components','FontSize',18);
+ylabel('Variance Accounted (%)','FontSize',18);
+set(gca,'fontsize',18);
 title('PCA Components Variances');
 pcaOutput = cat(2,output,score);
-save pcaOutput
+%xlswrite('pcaOutput.xlsx',pcaOutput);
+
+%% Scatter Plot
+%{
+gscatter(score(:,1),score(:,2),output,'rb');
+xlabel('PCA Score 1','FontSize',18);
+ylabel('PCA Score 2','FontSize',18);
+set(gca,'fontsize',18);
+title('PCA Scatterplot');
+%}
+
 

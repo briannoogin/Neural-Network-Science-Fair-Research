@@ -1,7 +1,7 @@
 % Reads Excel File
-trainingfileName = 'mammographBreastCancerWithDeletedData.xlsx';
+trainingfileName = 'breastKaggleFixed';
 [trainNumeric,text,excel] = xlsread(trainingfileName);
-testfileName = 'mammographBreastCancerWithDeletedData.xlsx';
+testfileName = 'breastKaggleFixed';
 [testNumeric,testText,testExcel] = xlsread(testfileName);
 % Gets the data targets
 trainTargetVector = trainNumeric(:,1);
@@ -86,18 +86,13 @@ end
 averageAUC = mean(AUCperformance,2);
 
 hold on
-title('Regularization ROC Curve','FontSize',24);
-xlabel('False Positive Rate','FontSize',24);
-ylabel('True Positive Rate','FontSize',24);
-
-
-for plotIndex = 1 : 3
-plot(performanceStruct(plotIndex).Xcoord,performanceStruct(plotIndex).Ycoord);
-%plot(performanceStruct(2).Xcoord,performanceStruct(2).Ycoord);
-end
-legend('0.0 Regularization','0.1 Regularization','0.2 Regularization','0.3 Regularization','0.4 Regularization',...
-'0.5 Regularization','0.6 Regularization','0.7 Regularization','0.8 Regularization','0.9 Regularization',...
-'1.0 Regularization');
+title('Imputation ROC Tests','FontSize',18);
+xlabel('False Positive Rate','FontSize',18);
+ylabel('True Positive Rate','FontSize',18);
+plot(performanceStruct(2).Xcoord,performanceStruct(2).Ycoord);
+plot(performanceStruct(1).Xcoord,performanceStruct(1).Ycoord);
+plot(performanceStruct(9).Xcoord,performanceStruct(9).Ycoord);
+legend('No Imputation','Mean Imputation of Entire Category','Mean Imputation of Class Only');
 hold off
 %}
 %bar(AUCperformance);

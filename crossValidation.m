@@ -1,4 +1,4 @@
-function[percentError] = crossValidation(net,foldNumber,excelName)
+function[percentError,correct] = crossValidation(net,foldNumber,excelName)
 %% Reads Excel File
 trainingfileName = excelName;
 [trainNumeric,text,excel] = xlsread(trainingfileName);
@@ -41,7 +41,7 @@ for numberOfFoldsRan = 1:folds
     trainFoldData = trainFold(2:size(trainFold,1),:);
     testFoldData = testFold(2:size(testFold,1),:);
     % Train Network
-    [net,record] = train(net,trainFoldData,trainFoldTargetVec,'useGPU','yes');
+    [net,record] = train(net,trainFoldData,trainFoldTargetVec,'useGPU','no');
     error(numberOfFoldsRan,1) = perform(net,testFoldData,testFoldTargetVec);
     % Calculate Percent Correct
     output = net(testFoldData);

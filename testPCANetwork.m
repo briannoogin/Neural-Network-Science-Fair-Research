@@ -23,9 +23,9 @@ net.layers{2}.name = 'Hidden Layer 2';
 net.layers{3}.name = 'Hidden Layer 3';
 net.layers{4}.name = 'Output';
 % Designate the activation functions and number of neural units
-net.layers{1}.transferFcn = 'softplus';
-net.layers{2}.transferFcn = 'softplus';
-net.layers{3}.transferFcn = 'softplus';
+net.layers{1}.transferFcn = 'tansig';
+net.layers{2}.transferFcn = 'tansig';
+net.layers{3}.transferFcn = 'logsig';
 net.layers{4}.transferFcn = 'softmax';
 net.layers{1,1}.size = 100;
 net.layers{2,1}.size = 50;
@@ -36,7 +36,7 @@ net.biasConnect = [1;1;1;1];
 net.outputConnect = [0 0 0 1];
 % Shape the network to the data
 %net = configure(net,trainingInputMatrix,trainTargetVector);
-net.performParam.regularization = .9;
+net.performParam.regularization = 0;
 net.trainFcn = 'trainscg';
 net.initFcn = 'initlay';
 net.performFcn = 'mse';
@@ -44,4 +44,4 @@ net.performFcn = 'mse';
 net.trainParam.showWindow = 0;
 trialPercentPerformance = zeros(11,1);
 trialTrainPerformance = zeros(11,1);
-[error,correct] = crossValidation(net,10,'breastKaggleFixed');
+error = crossValidation(net,10,'pcaOutput');
